@@ -13,7 +13,7 @@ class Event(models.Model):
         verbose_name='Количество участников',
         validators=[MinValueValidator(0), (MaxValueValidator(10000))]
     )
-    is_private = models.BooleanField(verbose_name='Частное', default='False')
+    is_private = models.BooleanField(verbose_name='Частное', default=False)
 
     class Meta:
         verbose_name_plural = 'События'

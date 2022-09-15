@@ -39,10 +39,11 @@ class EventReviewInline(admin.TabularInline):
     def has_delete_permission(self, request, obj=None):
         return False
     def get_readonly_fields(self, request, obj=None):
-        return ['id', 'created', 'updated', ]
+        return ['created', 'updated', ]
     model = models.Review
     extra = 0
-    fields = ['id', 'user', 'event', 'rate', 'text', 'created', 'updated', ]
+    fields = ['user', 'rate', 'text', 'created', 'updated', ]
+
 
 
 class PlacesLeftFilter(admin.SimpleListFilter):
@@ -51,31 +52,32 @@ class PlacesLeftFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         filter_list = (
-            ('0', '<= 50%'),
-            ('1', '> 50%'),
-            ('2', 'sold-out')
+            ('0', models.Event.EVENT_OCCUPANCY_LHALF),
+            ('1', models.Event.EVENT_OCCUPANCY_GHALF),
+            ('2', models.Event.EVENT_OCCUPANCY_SOLDOUT)
         )
         return filter_list
 
     def queryset(self, request, queryset):
         filter_value = self.value()
-        # if filter_value == '0':
-        #     return queryset.filter(__gt=0, __lte=0.5)
-        # if filter_value == '1':
-        #     return queryset.filter(occupancy_estimation_prop__gt=0.5)
-        # if filter_value == '2':
-        #     return queryset.filter(places_left_prop=0)
-        return queryset
+        list_id = []
+        if filter_value is None:
+            return queryset
+
+        for value in queryset:
+            if filter_value in value.estimate_places_left():
+                list_id.append(value.id)
+        return queryset.filter(id__in=list_id)
 
 
 @admin.register(models.Event)
 class EventAdmin(admin.ModelAdmin):
-    # TODO Также требуется реализовать собственный фильтр: “Заполненность”
-    list_display = ['id', 'title', 'date_start', 'participants_number', 'is_private', 'category', 'display_enroll_count', 'display_places_left', ]
+    list_display = ['id', 'title', 'category', 'date_start', 'is_private', 'participants_number', 'display_enroll_count', 'display_places_left', ]
+    list_display_links = ['id', 'title', ]
     search_fields = ['title', ]
     list_filter = [PlacesLeftFilter, 'category', 'features', ]
     ordering = ['date_start', ]
-    fields = ['title', 'description', 'date_start', 'participants_number', 'is_private', 'category', 'features', 'show_enroll_count', 'show_places_left', ]
-    readonly_fields = ['show_enroll_count', 'show_places_left', ]
+    fields = ['title', 'description', 'date_start', 'participants_number', 'is_private', 'category', 'features', 'display_enroll_count', 'display_places_left', ]
+    readonly_fields = ['display_enroll_count', 'display_places_left', ]
     filter_horizontal = ('features', )
     inlines = [EventReviewInline]

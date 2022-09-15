@@ -32,6 +32,11 @@ class Feature(models.Model):
 
 
 class Event(models.Model):
+
+    EVENT_OCCUPANCY_LHALF = '<= 50%'
+    EVENT_OCCUPANCY_GHALF = '> 50%'
+    EVENT_OCCUPANCY_SOLDOUT = 'sold-out'
+
     title = models.CharField(max_length=200, verbose_name='Название', default='')
     description = models.TextField(verbose_name='Описание', default='')
     date_start = models.DateTimeField(verbose_name='Дата начала')
@@ -46,10 +51,13 @@ class Event(models.Model):
     def __str__(self):
         return self.title
 
+    class Meta:
+        verbose_name_plural = 'События'
+        verbose_name = 'Событие'
+
     def display_enroll_count(self):
         return self.enrolls.count()
     display_enroll_count.short_description = 'Количество записей'
-    show_enroll_count = property(display_enroll_count)
 
     def places_left(self):
         return self.participants_number - self.enrolls.count()
@@ -59,21 +67,27 @@ class Event(models.Model):
         return self.places_left_prop / self.participants_number
     occupancy_estimation_prop = property(occupancy_estimation)
 
+    def estimate_places_left(self):
+        value = ''
+        if self.occupancy_estimation_prop >= 0.5:
+            value = '0'
+        elif self.occupancy_estimation_prop < 0.5 and self.places_left_prop != 0:
+            value = '1'
+        elif self.places_left_prop == 0:
+            value = '2'
+        return value
+    estimate_places_left_prop = property(estimate_places_left)
+
     def display_places_left(self):
         occupancy = ''
-        if self.occupancy_estimation_prop > 0.5:
-            occupancy = '> 50%'
-        elif self.occupancy_estimation_prop <= 0.5 and self.places_left_prop != 0:
-            occupancy = '<= 50%'
-        elif self.places_left_prop == 0:
-            occupancy = 'sold-out'
+        if self.estimate_places_left_prop == '1':
+            occupancy = self.EVENT_OCCUPANCY_GHALF
+        elif self.estimate_places_left_prop == '0':
+            occupancy = self.EVENT_OCCUPANCY_LHALF
+        elif self.estimate_places_left_prop == '2':
+            occupancy = self.EVENT_OCCUPANCY_SOLDOUT
         return f'{self.places_left_prop} ({occupancy})'
     display_places_left.short_description = 'Осталось мест'
-    show_places_left = property(display_places_left)
-
-    class Meta:
-        verbose_name_plural = 'События'
-        verbose_name = 'Событие'
 
 
 class Enroll(models.Model):

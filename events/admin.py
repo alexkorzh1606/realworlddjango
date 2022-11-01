@@ -52,9 +52,9 @@ class PlacesLeftFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         filter_list = (
-            ('0', models.Event.EVENT_OCCUPANCY_LHALF),
-            ('1', models.Event.EVENT_OCCUPANCY_GHALF),
-            ('2', models.Event.EVENT_OCCUPANCY_SOLDOUT)
+            (models.Event.EVENT_OCCUPANCY_0_QUERY, models.Event.EVENT_OCCUPANCY_LHALF),
+            (models.Event.EVENT_OCCUPANCY_1_QUERY, models.Event.EVENT_OCCUPANCY_GHALF),
+            (models.Event.EVENT_OCCUPANCY_2_QUERY, models.Event.EVENT_OCCUPANCY_SOLDOUT)
         )
         return filter_list
 

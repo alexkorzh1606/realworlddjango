@@ -1,6 +1,8 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import User
+from django.urls import reverse
+from django.conf import settings
 
 # Create your models here.
 
@@ -37,6 +39,10 @@ class Event(models.Model):
     EVENT_OCCUPANCY_GHALF = '> 50%'
     EVENT_OCCUPANCY_SOLDOUT = 'sold-out'
 
+    EVENT_OCCUPANCY_0_QUERY = '0'
+    EVENT_OCCUPANCY_1_QUERY = '1'
+    EVENT_OCCUPANCY_2_QUERY = '2'
+
     title = models.CharField(max_length=200, verbose_name='Название', default='')
     description = models.TextField(verbose_name='Описание', default='')
     date_start = models.DateTimeField(verbose_name='Дата начала')
@@ -47,6 +53,7 @@ class Event(models.Model):
     is_private = models.BooleanField(verbose_name='Частное', default=False)
     category = models.ForeignKey(Category, null=True, on_delete=models.SET_DEFAULT, default='', related_name='events', verbose_name='Категория')
     features = models.ManyToManyField(Feature, verbose_name='Свойства события')
+    logo = models.ImageField(upload_to='events/events', blank=True, null=True)
 
     def __str__(self):
         return self.title
@@ -54,6 +61,21 @@ class Event(models.Model):
     class Meta:
         verbose_name_plural = 'События'
         verbose_name = 'Событие'
+
+    def get_absolute_url(self):
+        return reverse('events:event_detail', args=[str(self.pk)])
+
+    @property
+    def rate(self):
+        event_reviews_list = self.reviews.all()
+        rate_sum = 0
+        for review in event_reviews_list:
+            rate_sum += review.rate
+        return round(rate_sum / event_reviews_list.count(), 1)
+
+    @property
+    def logo_url(self):
+        return self.logo.url if self.logo else f'{settings.STATIC_URL}images/svg-icon/event.svg'
 
     def display_enroll_count(self):
         return self.enrolls.count()
@@ -70,11 +92,11 @@ class Event(models.Model):
     def estimate_places_left(self):
         value = ''
         if self.occupancy_estimation_prop >= 0.5:
-            value = '0'
+            value = self.EVENT_OCCUPANCY_0_QUERY
         elif self.occupancy_estimation_prop < 0.5 and self.places_left_prop != 0:
-            value = '1'
+            value = self.EVENT_OCCUPANCY_1_QUERY
         elif self.places_left_prop == 0:
-            value = '2'
+            value = self.EVENT_OCCUPANCY_2_QUERY
         return value
     estimate_places_left_prop = property(estimate_places_left)
 

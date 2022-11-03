@@ -30,7 +30,13 @@
 	                                </div>
 	                                <div class="col-lg-6 col-xl-7">
 		                                {% if event.is_private == True %}
-	                                        <span data-test="is_private" class="badge bg-dark">Private</span>
+	                                        <span data-test="is_private" class="badge bg-dark">
+		                                        Private
+	                                        </span>
+		                                {% else %}
+			                                <span hidden data-test="is_private" class="badge bg-dark">
+		                                        Private
+	                                        </span>
 		                                {% endif %}
 	                                    <h2 data-test="event_title">{{ event.title }}</h2>
 	                                    <p data-test="event_rate" class="badge bg-warning">{{ rate }} / 5</p>

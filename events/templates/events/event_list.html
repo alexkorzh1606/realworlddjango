@@ -101,7 +101,13 @@
 	                        <div class="card-header">
 	                            <h5 class="card-title mb-0">{{ event.title }}</h5>
 		                        {% if event.is_private == True %}
-	                                <span data-test="is_private" class="badge bg-dark">Private</span>
+	                                <span data-test="is_private" class="badge bg-dark">
+		                                Private
+	                                </span>
+		                        {% else %}
+			                        <span hidden data-test="is_private" class="badge bg-dark">
+		                                Private
+	                                </span>
 		                        {% endif %}
 	                        </div>
 	                        <div class="card-body">

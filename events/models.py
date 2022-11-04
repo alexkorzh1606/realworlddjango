@@ -68,10 +68,13 @@ class Event(models.Model):
     @property
     def rate(self):
         event_reviews_list = self.reviews.all()
-        rate_sum = 0
-        for review in event_reviews_list:
-            rate_sum += review.rate
-        return round(rate_sum / event_reviews_list.count(), 1)
+        if event_reviews_list == 0:
+            return float(0)
+        else:
+            rate_sum = 0
+            for review in event_reviews_list:
+                rate_sum += review.rate
+            return round(rate_sum / event_reviews_list.count(), 1)
 
     @property
     def logo_url(self):

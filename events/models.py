@@ -3,6 +3,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.conf import settings
+from statistics import mean
 
 # Create your models here.
 
@@ -67,12 +68,13 @@ class Event(models.Model):
 
     @property
     def rate(self):
-        event_reviews_list = self.reviews.all()
-        rate_sum = 0
-        for review in event_reviews_list:
-            rate_sum += review.rate
-        rate_result = round(rate_sum / event_reviews_list.count(), 1)
-        return rate_result
+        # event_reviews_list = self.reviews.all()
+        # rate_sum = 0
+        # for review in event_reviews_list:
+        #     rate_sum += review.rate
+        # rate_result = round(rate_sum / event_reviews_list.count(), 1)
+        # return rate_result
+        return round(mean(self.reviews.values_list('rate', flat=True)), 1)
 
     @property
     def logo_url(self):

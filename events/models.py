@@ -68,7 +68,7 @@ class Event(models.Model):
     @property
     def rate(self):
         event_reviews_list = self.reviews.all()
-        if event_reviews_list == 0:
+        if event_reviews_list.count() == 0:
             rate_result = 0
         else:
             rate_sum = 0
